@@ -3,139 +3,127 @@ from tkinter import *
 import cv2
 import os
 from PIL import Image, ImageTk
-from tkinter import ttk
-# from multiprocessing import Process
-# import facial_recognition
-# import database
 
-class APP:
-	def __init__(self):
-		self.camera = None   # 摄像头
-		self.root = Tk()
-		self.root.title('FACE')
-		self.root.geometry('%dx%d' % (800, 600))
-		self.createFirstPage()
-		mainloop()
+from tkinter import filedialog
 
-	def createFirstPage(self):
-		self.page1 = Frame(self.root)
-		self.page1.pack()
-		Label(self.page1, text='欢迎使用人脸识别系统', font=('粗体', 20)).pack()
-		image = Image.open("1.jpg") #随便使用一张图片 不要太大
-		photo = ImageTk.PhotoImage(image = image)
-		self.data1 = Label(self.page1,  width=780,image = photo)
-		self.data1.image = photo
-		self.data1.pack(padx=5, pady=5)
+def ReadVideo():
+    global file_path
+    global height
+    global width
 
-		self.button11 = Button(self.page1, width=18, height=2, text="签到打卡", bg='red', font=("宋", 12),
-							   relief='raise',command = self.createSecondPage)
-		self.button11.pack(side=LEFT, padx=25, pady = 10)
-		self.button12 = Button(self.page1, width=18, height=2, text="录入新的人脸", bg='green', font=("宋", 12),
-		                       relief='raise', command = self.createSecondPage)
-		self.button12.pack(side=LEFT, padx=25, pady = 10)
-		self.button13 = Button(self.page1, width=18, height=2, text="查询签到信息", bg='white', font=("宋", 12), relief='raise',
-							   command = self.checkDataView)
-		self.button13.pack(side=LEFT, padx=25, pady = 10)
-		self.button14 = Button(self.page1, width=18, height=2, text="退出系统", bg='gray', font=("宋", 12),
-							   relief='raise',command = self.quitMain)
-		self.button14.pack(side=LEFT, padx=25, pady = 10)
+    file_path = filedialog.askopenfilename(title='Select the diagnostic instrument .exe file',filetypes=[('mp4', '*.mp4'), ('avi', '*.avi')], initialdir='./')
+    cap = cv2.VideoCapture(file_path)
+    cap.set(cv2.CAP_PROP_POS_FRAMES, 1)
+    ret, frame = cap.read()
+    global current_img
+    current_img=frame
+    [height, width, pixels] = frame.shape #获取视频的宽和高
+    new_height =height # int(screenheight * 0.85)
+    new_width=width #int(new_height *  width/height)
 
-	def createSecondPage(self):
-		self.camera = cv2.VideoCapture(0)
-		self.page1.pack_forget()
-		self.page2 = Frame(self.root)
-		self.page2.pack()
-		Label(self.page2, text='欢迎使用人脸识别系统', font=('粗体', 20)).pack()
-		self.data2 = Label(self.page2)
-		self.data2.pack(padx=5, pady=5)
+    image_page.place(x=0, y=0, width=new_width, height=new_height)
+    print(new_height)
+    print(new_width)
 
-		self.button21 = Button(self.page2, width=18, height=2, text="返回", bg='gray', font=("宋", 12),
-							   relief='raise',command = self.backFirst)
-		self.button21.pack(padx=25,pady = 10)
-		self.video_loop(self.data2)
+    cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
+    current_image = Image.fromarray(cv2image)
+    imgtk = ImageTk.PhotoImage(image=current_image)
+    show_img_label.imgtk = imgtk
+    show_img_label.config(image=imgtk)
 
-	def video_loop(self, panela):
-
-		success, img = self.camera.read()  # 从摄像头读取照片
-		if success:
-			cv2image = cv2.cvtColor(img, cv2.COLOR_BGR2RGBA)  # 转换颜色从BGR到RGBA
-			current_image = Image.fromarray(cv2image)  # 将图像转换成Image对象
-			imgtk = ImageTk.PhotoImage(image=current_image)
-			panela.imgtk = imgtk
-			panela.config(image=imgtk)
-			self.root.after(1, lambda: self.video_loop(panela))
-
-	#  签到信息展示
-	# noinspection PyAttributeOutsideInit
-	def checkDataView(self):
-		self.page3 = Frame(self.root)
-		self.page1.pack_forget()
-		self.root.geometry('700x360')
-		Label(self.page3, text='今日签到信息', bg='white', fg='red', font=('宋体', 25)).pack(side=TOP, fill='x')
-		self.checkDate = ttk.Treeview(self.page3, show='headings', column=('sid', 'name', 'check_time' ))
-
-		self.checkDate.column('sid', width=100, anchor="center")
-		self.checkDate.column('name', width=200, anchor="center")
-		self.checkDate.column('check_time', width=300, anchor="center")
-
-
-		self.checkDate.heading('sid', text='签到序号')
-		self.checkDate.heading('name', text='名字')
-		self.checkDate.heading('check_time', text='签到时间')
-
-		# 例子
-		# data = {"item0": ["1a", "2a", "4a"],
-		# 		"item1": ["1c", "2c", "3c"]}
-		# self.checkDate.insert('', 'end', values=data['item0'])
-		# self.checkDate.insert('', 'end', values=data['item1'])
-
-
-		# # y滚动条
-		# yscrollbar = Scrollbar(self.page3, orient=VERTICAL, command=self.checkDate.yview)
-		# self.checkDate.configure(yscrollcommand=yscrollbar.set)
-		# yscrollbar.pack(side=RIGHT, fill=Y)
-
-
-		self.checkDate.pack(expand = 1, fill = BOTH)
-		Button(self.page3, width=20, height=2, text="返回", bg='gray', font=("宋", 12),
-							   relief='raise',command =self.backMain).pack(padx = 20, pady = 20)
-		self.page3.pack()
-
-
-
-	def backFirst(self):
-		self.page2.pack_forget()
-		self.page1.pack()
-		# 释放摄像头资源
-		self.camera.release()
-		cv2.destroyAllWindows()
-
-	def backMain(self):
-		self.root.geometry('900x600')
-		self.page3.pack_forget()
-		self.page1.pack()
-
-	def quitMain(self):
-		sys.exit(0)
-
-	# #  个人信息展示
-	# def Dataview(self):
-	# 	self.personalData = ttk.Treeview(self.root, show='headings', column=('sid', 'name', 'sex', 'address'))
-	# 	self.personalData.column('sid', width=150, anchor="center")
-	# 	self.personalData.column('name', width=150, anchor="center")
-	# 	self.personalData.column('phone', width=150, anchor="center")
-	# 	self.personalData.column('address', width=150, anchor="center")
-	#
-	# 	self.personalData.heading('sid', text='学号')
-	# 	self.personalData.heading('name', text='名字')
-	# 	self.personalData.heading('phone', text='电话')
-	# 	self.personalData.heading('address', text='地址')
-	# 	self.personalData.pack()
-
+def calib_img():
+    #root.pack_forget()  # 隐藏界面
+    # cv2.imshow('frame',current_img)
+    # out_win = "output_style_full_screen"
+    # cv2.namedWindow(out_win, cv2.WINDOW_NORMAL)
+    # cv2.setWindowProperty(out_win, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+    # cv2.imshow(out_win, current_img)
+    show_img_label.bind("<Button-1>", callback)
+def callback(event):
+    print("当前位置：",event.x,event.y)
+    point_1_label_x["text"] = "x=" + str(event.x)
+    point_1_label_y["text"] = "y=" + str(event.y)
 
 
 if __name__ == '__main__':
 
-	demo = APP()
+
+    root = Tk()
+    root.title('Calib')
+    #root.geometry('%dx%d' % (800, 600))
+
+
+
+    global screenwidth
+    screenwidth= root.winfo_screenwidth() # 获取屏幕尺寸以计算布局参数，使窗口居屏幕中央
+    global screenheight
+    screenheight = root.winfo_screenheight()
+
+    width = screenwidth#/1.5#800
+    height = screenheight#/1.5#600
+    root.geometry('%dx%d' % (width, height))
+    root.attributes("-topmost", True)
+    #alignstr = '%dx%d+%d+%d' % (width, height, (screenwidth - width) / 2, (screenheight - height) / 2)
+    #root.geometry(alignstr)
+    root.resizable(width=True, height=True)# 设置窗口是否可变长、宽，True：可变，False：不可变
+
+    #page_top = Frame(root,width=width,bg='#090')
+    #page_top.pack(side='left')
+    #page1 = Frame(page_top,bg='#900')
+
+    #page_two = Frame(root, bg='#900', )
+
+
+
+    image_page = Frame(root,bg='#900')
+    image_page.pack(side='top')
+    image_page.place(x=0, y=0, width=1280, height=960)
+    # Label(page2, text='车位标注工具', font=('粗体', 10)).pack()
+    show_img_label = Label(image_page)
+    show_img_label.pack(side='top',padx=5, pady=5)
+
+    # information_page = Frame(bg='#0f0')
+    # information_page.pack()
+    # # Label(page2, text='车位标注工具', font=('粗体', 10)).pack()
+    # show_img_label = Label(information_page, width=1280, height=720)
+    # show_img_label.pack(padx=5, pady=5)
+
+    page_one = Frame(root, bg='#0f0')
+    page_one.pack(side='right', padx=20, pady=10)
+    #page_one.place(width=500)
+    label_one = Label(page_one, bg='#00f')
+    label_one.pack(side='top', padx=0, pady=0)
+    button_open_video = Button(label_one, text="打开视频", bg='#999', font=("宋", 18),relief='raise', command=ReadVideo)
+    button_open_video.pack(side='left', padx=5, pady=10)
+    calib_button = Button(label_one, text="开始标注", bg='#999', font=("宋", 18), padx=10, relief='raise', command=calib_img)
+    calib_button.pack(side='left', padx=5, pady=10)
+
+    label_two = Label(page_one, bg='#f4f')
+    label_two.pack(side='top', padx=0, pady=0)
+    pre_img_5 = Button(label_two, text="<<", bg='#999', font=("宋", 18),padx=10, relief='raise', command=ReadVideo)
+    pre_img_5.pack(side='left', padx=5, pady=10)
+    pre_img = Button(label_two, text="<", bg='#999', font=("宋", 18),padx=10, relief='raise', command=ReadVideo)
+    pre_img.pack(side='left', padx=5, pady=10)
+
+    next_img = Button(label_two, text=">", bg='#999', font=("宋", 18),padx=10, relief='raise', command=ReadVideo)
+    next_img.pack(side='left', padx=5, pady=10)
+    next_img_5 = Button(label_two, text=">>", bg='#999', font=("宋", 18),padx=10, relief='raise', command=ReadVideo)
+    next_img_5.pack(side='left', padx=5, pady=10)
+
+    label_three = Label(page_one, bg='#0ff',height=500,width=20)
+    label_three.pack(side='top', padx=10, pady=10)
+
+    point_1_label_x =Label(label_three,text="x=", bg='#0ff',font=("宋", 18))
+    point_1_label_x.pack(side='left', padx=5, pady=10)
+    point_1_label_y = Label(label_three, text="y=", bg='#0ff', font=("宋", 18))
+    point_1_label_y.pack(side='left', padx=5, pady=10)
+
+
+    #page_two = Frame(root,bg='#900')
+    #page_two.pack(side='bottom', padx=10, pady=10)
+
+
+    mainloop()
+
 
 
