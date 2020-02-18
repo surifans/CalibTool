@@ -7,35 +7,16 @@ from PIL import Image, ImageTk
 from tkinter import filedialog
 
 def createSecondPage():
-    #page_one.pack_forget() #隐藏界面
     video_play = 0
-    #file_path = 'test.mp4'
-    #file_path = 'C:/Users/Administrator/Desktop/git/CalibTool/test.mp4'
-    #print(file_path)
-    #root.withdraw()
-    #file_path = filedialog.askopenfilename()
     file_path = filedialog.askopenfilename(title='Select the diagnostic instrument .exe file',
                                 filetypes=[('mp4', '*.mp4'), ('avi', '*.avi')], initialdir='./')
-
     #file_path = filedialog.askopenfilename(title=u'选择文件', initialdir=(os.path.expanduser('H:/')))
-
     print(file_path)
-    # if file_path is not None:
-    #     with open(file=file_path, mode='r+', encoding='utf-8') as file:
-    #         file_text = file.read()
-    #     text1.insert('insert', file_text)
-
-
-
-    #root.after_cancel(solve)
-
-    #file_path='C: / Users / Administrator / Desktop / CalibTool / test.mp4'
-
-    video_play = 1
-    #cv2.destroyAllWindows()
-    page_one.pack()
+    if file_path is not None:
+        video_play = 1
+        #root.after_cancel()
+    #page_one.pack()
     cap = cv2.VideoCapture(file_path)
-
 
     #button21 = Button(page2, width=18, height=2, text="返回", bg='gray', font=("宋", 12),relief='raise', command=backFirst)
     #button21.pack(padx=25, pady=10)
